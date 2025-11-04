@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Registry & Lost Pet Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🐕 🐈 🐦 🐰';
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            font-size: 2em;
+            opacity: 0.3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-pets {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .pet-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .pet-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab-icon {
+            font-size: 1.5em;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .label-icon {
+            font-size: 1.2em;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .pet-type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .pet-type-option {
+            padding: 20px;
+            border: 3px solid #e9ecef;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .pet-type-option:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .pet-type-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .pet-type-option .icon {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+        }
+
+        .pet-type-option .label {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .image-upload {
+            border: 3px dashed #e9ecef;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .image-upload:hover {
+            border-color: #667eea;
+            background: #e9ecef;
+        }
+
+        .image-upload .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .image-upload input {
+            display: none;
+        }
+
+        .image-preview {
+            max-width: 250px;
+            max-height: 250px;
+            margin: 20px auto;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            font-size: 1.3em;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            flex: 1;
+        }
+
+        .search-box button {
+            width: auto;
+            padding: 14px 35px;
+        }
+
+        .pet-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 3px solid #dee2e6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pet-card::before {
+            content: '🐾';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 3em;
+            opacity: 0.1;
+        }
+
+        .pet-card img {
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .pet-info {
+            margin: 15px 0;
+        }
+
+        .pet-info p {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-icon {
+            font-size: 1.2em;
+            min-width: 25px;
+        }
+
+        .pet-info strong {
+            color: #667eea;
+            min-width: 130px;
+        }
+
+        .tag-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 25px 0;
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: 3px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            position: relative;
+        }
+
+        .tag-display::before {
+            content: '🏷️';
+            position: absolute;
+            left: 20px;
+            font-size: 1.5em;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 3px solid #c3e6cb;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .success-message .icon {
+            font-size: 2em;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 3px solid #f5c6cb;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .error-message .icon {
+            font-size: 2em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .no-results .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .alert-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid #ffc107;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .alert-box .icon {
+            font-size: 2em;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+
+            .tab {
+                padding: 15px 10px;
+                font-size: 1em;
+            }
+
+            .hero-pets {
+                gap: 10px;
+            }
+
+            .pet-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2em;
+            }
+
+            .pet-type-selector {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Pet Registry</h1>
+            <p>Register your pet and help reunite lost pets with their families</p>
+            <div class="hero-pets">
+                <div class="pet-icon">🐕</div>
+                <div class="pet-icon">🐈</div>
+                <div class="pet-icon">🐦</div>
+                <div class="pet-icon">🐰</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('register')">
+                <span class="tab-icon">📝</span>
+                <span>Register Pet</span>
+            </button>
+            <button class="tab" onclick="switchTab('search')">
+                <span class="tab-icon">🔍</span>
+                <span>Find Lost Pet</span>
+            </button>
+        </div>
+
+        <div class="content">
+            <!-- Register Section -->
+            <div id="register" class="section active">
+                <h2 style="margin-bottom: 25px; color: #333; display: flex; align-items: center; gap: 10px;">
+                    <span>📋</span> Register Your Pet
+                </h2>
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="ownerName">
+                            <span class="label-icon">👤</span> Owner Name *
+                        </label>
+                        <input type="text" id="ownerName" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">
+                            <span class="label-icon">✉️</span> Email *
+                        </label>
+                        <input type="email" id="email" required placeholder="your.email@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">
+                            <span class="label-icon">📱</span> Phone Number *
+                        </label>
+                        <input type="tel" id="phone" required placeholder="+1234567890">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="petName">
+                            <span class="label-icon">🐾</span> Pet Name *
+                        </label>
+                        <input type="text" id="petName" required placeholder="What's your pet's name?">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span class="label-icon">🦴</span> Pet Type *
+                        </label>
+                        <input type="hidden" id="petType" required>
+                        <div class="pet-type-selector">
+                            <div class="pet-type-option" onclick="selectPetType('Dog', this)">
+                                <div class="icon">🐕</div>
+                                <div class="label">Dog</div>
+                            </div>
+                            <div class="pet-type-option" onclick="selectPetType('Cat', this)">
+                                <div class="icon">🐈</div>
+                                <div class="label">Cat</div>
+                            </div>
+                            <div class="pet-type-option" onclick="selectPetType('Bird', this)">
+                                <div class="icon">🐦</div>
+                                <div class="label">Bird</div>
+                            </div>
+                            <div class="pet-type-option" onclick="selectPetType('Rabbit', this)">
+                                <div class="icon">🐰</div>
+                                <div class="label">Rabbit</div>
+                            </div>
+                            <div class="pet-type-option" onclick="selectPetType('Other', this)">
+                                <div class="icon">🐾</div>
+                                <div class="label">Other</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="breed">
+                            <span class="label-icon">🏆</span> Breed
+                        </label>
+                        <input type="text" id="breed" placeholder="e.g., Golden Retriever, Persian Cat">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span class="label-icon">📷</span> Pet Photo *
+                        </label>
+                        <div class="image-upload" onclick="document.getElementById('petPhoto').click()">
+                            <div class="upload-icon">📸</div>
+                            <p style="font-weight: 600; color: #667eea;">Click to upload pet photo</p>
+                            <p style="font-size: 0.9em; color: #6c757d; margin-top: 5px;">JPG, PNG or GIF</p>
+                            <input type="file" id="petPhoto" accept="image/*" required>
+                            <img id="imagePreview" class="image-preview">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">
+                            <span class="label-icon">🏠</span> Address *
+                        </label>
+                        <textarea id="address" required placeholder="Enter your full address including city and zip code"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">
+                            <span class="label-icon">📝</span> Additional Notes
+                        </label>
+                        <textarea id="notes" placeholder="Medical conditions, special behaviors, favorite treats, etc."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        <span class="btn-icon">🏷️</span>
+                        <span>Register Pet & Generate Tag</span>
+                    </button>
+                </form>
+
+                <div id="registrationResult"></div>
+            </div>
+
+            <!-- Search Section -->
+            <div id="search" class="section">
+                <h2 style="margin-bottom: 25px; color: #333; display: flex; align-items: center; gap: 10px;">
+                    <span>🔍</span> Find a Lost Pet
+                </h2>
+                <p style="margin-bottom: 20px; color: #6c757d; display: flex; align-items: center; gap: 10px;">
+                    <span>🏷️</span> Enter the Tag ID found on the pet's collar
+                </p>
+                
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Enter Tag ID (e.g., PET-ABC123)">
+                    <button class="btn" onclick="searchPet()">
+                        <span class="btn-icon">🔍</span>
+                        <span>Search</span>
+                    </button>
+                </div>
+
+                <div id="searchResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pets = {};
+        let imageData = '';
+        let selectedPetType = '';
+
+        loadPets();
+
+        function loadPets() {
+            const stored = getPetsFromMemory();
+            if (stored) {
+                pets = stored;
+            }
+        }
+
+        function savePets() {
+            savePetsToMemory(pets);
+        }
+
+        function getPetsFromMemory() {
+            return window.petsData || {};
+        }
+
+        function savePetsToMemory(data) {
+            window.petsData = data;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tab).classList.add('active');
+        }
+
+        function selectPetType(type, element) {
+            document.querySelectorAll('.pet-type-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            document.getElementById('petType').value = type;
+            selectedPetType = type;
+        }
+
+        document.getElementById('petPhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imageData = event.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = imageData;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function generateTagId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let tag = 'PET-';
+            for (let i = 0; i < 6; i++) {
+                tag += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            if (pets[tag]) {
+                return generateTagId();
+            }
+            return tag;
+        }
+
+        function getPetEmoji(type) {
+            const emojis = {
+                'Dog': '🐕',
+                'Cat': '🐈',
+                'Bird': '🐦',
+                'Rabbit': '🐰',
+                'Other': '🐾'
+            };
+            return emojis[type] || '🐾';
+        }
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!selectedPetType) {
+                alert('Please select a pet type');
+                return;
+            }
+
+            const tagId = generateTagId();
+            const petData = {
+                tagId: tagId,
+                ownerName: document.getElementById('ownerName').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                petName: document.getElementById('petName').value,
+                petType: selectedPetType,
+                breed: document.getElementById('breed').value,
+                address: document.getElementById('address').value,
+                notes: document.getElementById('notes').value,
+                photo: imageData,
+                registrationDate: new Date().toLocaleDateString()
+            };
+
+            pets[tagId] = petData;
+            savePets();
+
+            const petEmoji = getPetEmoji(petData.petType);
+
+            const resultDiv = document.getElementById('registrationResult');
+            resultDiv.innerHTML = `
+                <div class="success-message">
+                    <span class="icon">✅</span>
+                    <div>
+                        <h3>Registration Successful!</h3>
+                        <p>Your pet has been registered successfully.</p>
+                    </div>
+                </div>
+                <div class="tag-display">
+                    ${tagId}
+                </div>
+                <div class="pet-card">
+                    ${petData.photo ? `<img src="${petData.photo}" alt="${petData.petName}">` : ''}
+                    <div class="pet-info">
+                        <p><span class="info-icon">${petEmoji}</span><strong>Pet Name:</strong> ${petData.petName}</p>
+                        <p><span class="info-icon">👤</span><strong>Owner:</strong> ${petData.ownerName}</p>
+                        <p><span class="info-icon">📅</span><strong>Registered:</strong> ${petData.registrationDate}</p>
+                    </div>
+                    <div class="alert-box">
+                        <span class="icon">⚠️</span>
+                        <div>
+                            <strong>Important:</strong> Please write this Tag ID on your pet's collar. If your pet gets lost, anyone can search for this ID on our website to find your contact information.
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('registrationForm').reset();
+            document.getElementById('imagePreview').style.display = 'none';
+            document.querySelectorAll('.pet-type-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            imageData = '';
+            selectedPetType = '';
+
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function searchPet() {
+            const searchInput = document.getElementById('searchInput').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('searchResult');
+
+            if (!searchInput) {
+                resultDiv.innerHTML = `
+                    <div class="error-message">
+                        <span class="icon">❌</span>
+                        <div>Please enter a Tag ID</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const pet = pets[searchInput];
+
+            if (pet) {
+                const petEmoji = getPetEmoji(pet.petType);
+                resultDiv.innerHTML = `
+                    <div class="success-message">
+                        <span class="icon">✅</span>
+                        <div>
+                            <h3>Pet Found!</h3>
+                            <p>Here are the owner's details:</p>
+                        </div>
+                    </div>
+                    <div class="pet-card">
+                        ${pet.photo ? `<img src="${pet.photo}" alt="${pet.petName}">` : ''}
+                        <h3 style="color: #667eea; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 1.5em;">${petEmoji}</span> ${pet.petName}
+                        </h3>
+                        <div class="pet-info">
+                            <p><span class="info-icon">🏷️</span><strong>Tag ID:</strong> ${pet.tagId}</p>
+                            <p><span class="info-icon">${petEmoji}</span><strong>Pet Type:</strong> ${pet.petType}</p>
+                            ${pet.breed ? `<p><span class="info-icon">🏆</span><strong>Breed:</strong> ${pet.breed}</p>` : ''}
+                            <p><span class="info-icon">👤</span><strong>Owner Name:</strong> ${pet.ownerName}</p>
+                            <p><span class="info-icon">✉️</span><strong>Email:</strong> <a href="mailto:${pet.email}" style="color: #667eea;">${pet.email}</a></p>
+                            <p><span class="info-icon">📱</span><strong>Phone:</strong> <a href="tel:${pet.phone}" style="color: #667eea;">${pet.phone}</a></p>
+                            <p><span class="info-icon">🏠</span><strong>Address:</strong> ${pet.address}</p>
+                            ${pet.notes ? `<p><span class="info-icon">📝</span><strong>Notes:</strong> ${pet.notes}</p>` : ''}
+                            <p><span class="info-icon">📅</span><strong>Registered:</strong> ${pet.registrationDate}</p>
+                        </div>
+                        <div class="alert-box">
+                            <span class="icon">📞</span>
+                            <div>
+                                <strong>Please contact the owner immediately to reunite them with their pet!</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="no-results">
+                        <div class="icon">🔍</div>
+                        <p>No pet found with Tag ID: <strong>${searchInput}</strong></p>
+                        <p style="margin-top: 15px; font-size: 0.9em;">Please check the Tag ID and try again.</p>
+                    </div>
+                `;
+            }
+
+            resultDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPet();
+            }
+        });
+    </script>
+</body>
+</html>
